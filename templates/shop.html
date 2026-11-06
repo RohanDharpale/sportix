@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Shop Sports Gear | SPORTIX{% endblock %}
+{% block content %}
+<section class="shop-intro"><div class="shop-intro-inner"><span class="eyebrow light-eyebrow">THE SPORTIX COLLECTION</span><h1>Find your <em>edge.</em></h1><p>The right gear for wherever your game takes you.</p><div class="shop-stats"><span><b>01</b> Browse your sport</span><span><b>02</b> Find your fit</span><span><b>03</b> Get moving</span></div></div><div class="shop-intro-art"><span>TRAIN / PLAY / REPEAT</span></div></section>
+<section class="section shop-layout">
+  <aside class="filters" id="categories">
+    <div class="filter-top"><h2>Filters <span data-filter-count></span></h2><button data-clear-filters>Reset</button></div>
+    <div class="filter-group"><h3>Search</h3><label class="filter-search"><span>⌕</span><input data-shop-search type="search" placeholder="What are you looking for?" value="{{ request.args.get('q', '') }}"></label></div>
+    <div class="filter-group"><h3>Category</h3><div class="filter-options">{% for category in categories %}<label><input type="radio" name="category" value="{{ category }}" data-category-filter><span>{{ category }}</span></label>{% endfor %}<label><input type="radio" name="category" value="" data-category-filter><span>All categories</span></label></div></div>
+    <div class="filter-group"><h3>Price range</h3><div class="price-inputs"><label>Min ₹<input type="number" min="0" step="100" value="0" data-min-price></label><label>Max ₹<input type="number" min="0" step="100" value="10000" data-max-price></label></div><input class="range-slider" type="range" min="0" max="10000" step="100" value="10000" data-price-slider aria-label="Maximum price"><div class="range-labels"><span>₹0</span><span>₹10,000+</span></div></div>
+    <div class="filter-group"><h3>Brand</h3><select data-brand-filter><option value="">All brands</option></select></div>
+    <div class="filter-note"><span>✳</span><p>Choose gear that meets you where you are — and takes you further.</p></div>
+  </aside>
+  <div class="catalog">
+    <div class="catalog-heading"><div><span class="eyebrow">GEAR UP YOUR WAY</span><h2>All the good stuff.</h2><p data-result-count>Loading products…</p></div><label class="sort-control">Sort by <select data-sort><option value="featured">Featured</option><option value="rating">Top rated</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option></select></label></div>
+    <div class="active-filters" data-active-filters></div>
+    <div class="product-grid catalog-grid" data-product-grid></div>
+    <div class="empty-state" data-empty-state hidden><span>⌕</span><h3>No gear found. Yet.</h3><p>Try a different search or reset your filters.</p><button class="btn btn-primary" data-clear-filters>Clear all filters</button></div>
+  </div>
+</section>
+<section class="shop-cta"><div><span class="eyebrow light-eyebrow">READY WHEN YOU ARE</span><h2>Every session starts <em>somewhere.</em></h2></div><a class="btn btn-primary" href="#top" data-back-top>Back to the top ↑</a></section>
+{% endblock %}

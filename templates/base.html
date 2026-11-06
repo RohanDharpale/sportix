@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071a1d">
+  <meta name="description" content="SPORTIX — gear up for better performance. Shop sports equipment, fitness gear, apparel and running shoes.">
+  <title>{% block title %}SPORTIX | Gear Up For Better Performance{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+  <div class="announcement"><span>FREE SHIPPING ON ORDERS OVER ₹2,999</span><span>Built for your next personal best.</span></div>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="SPORTIX home"><span class="brand-mark">S</span><span>SPORT<span class="brand-accent">IX</span></span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+      <a href="/shop" class="{% if request.path == '/shop' %}active{% endif %}">Shop</a>
+      <a href="/shop#categories">Categories</a>
+      <a href="/#why-sportix">Our story</a>
+    </nav>
+    <form class="header-search" action="/shop" method="get">
+      <span class="search-icon">⌕</span><input name="q" type="search" placeholder="Search sports gear..." value="{{ request.args.get('q', '') }}" aria-label="Search sports products">
+      <button aria-label="Submit search">↵</button>
+    </form>
+    <div class="header-actions">
+      <a class="icon-link" href="/shop" aria-label="Shop products">♙</a>
+      <button class="cart-trigger" data-open-cart aria-label="Open shopping cart">♧ <span class="cart-count" data-cart-count>0</span></button>
+      <button class="mobile-menu" data-mobile-menu aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="footer" id="why-sportix">
+    <div class="footer-main">
+      <div><a class="brand footer-brand" href="/"><span class="brand-mark">S</span><span>SPORT<span class="brand-accent">IX</span></span></a><p>Find your edge. Find your gear.<br>Made for every kind of athlete.</p></div>
+      <div><h4>Explore</h4><a href="/shop">All products</a><a href="/shop?category=Cricket%20Equipment">Cricket</a><a href="/shop?category=Fitness%20%26%20Gym%20Accessories">Fitness & gym</a></div>
+      <div><h4>Help & support</h4><a href="/#why-sportix">About SPORTIX</a><a href="/admin/login">Store admin</a><a href="mailto:hello@sportix.example">Contact us</a><span>Mon–Sat · 9 AM–6 PM</span></div>
+      <div class="footer-news"><h4>Keep moving.</h4><p>Gear tips, fresh drops and training inspiration.</p><form data-newsletter><input type="email" placeholder="Your email address" aria-label="Email address" required><button type="submit">→</button></form><small data-newsletter-message></small></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 SPORTIX. All rights reserved.</span><span>Built for movement. Designed for you.</span></div>
+  </footer>
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+  <div class="cart-overlay" data-cart-overlay></div>
+  <aside class="cart-drawer" data-cart-drawer aria-label="Shopping cart" aria-hidden="true">
+    <div class="drawer-head"><div><span class="eyebrow">YOUR SELECTION</span><h2>Your cart <span data-drawer-count>(0)</span></h2></div><button class="close-drawer" data-close-cart aria-label="Close cart">×</button></div>
+    <div class="drawer-items" data-drawer-items></div>
+    <div class="drawer-bottom"><div class="subtotal-line"><span>Subtotal</span><strong data-drawer-total>₹0</strong></div><p>Shipping calculated at checkout.</p><a class="btn btn-primary btn-block" href="/shop#checkout" data-drawer-checkout>Go to checkout <span>↗</span></a><a class="continue-link" href="/shop" data-close-cart>Continue shopping</a></div>
+  </aside>
+</body>
+</html>
