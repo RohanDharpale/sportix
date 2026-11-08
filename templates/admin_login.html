@@ -5,7 +5,7 @@
 <section class="admin-login-wrap"><div class="admin-login-card">
 <span class="eyebrow">SPORTIX STORE MANAGEMENT</span><h1>Welcome <em>back.</em></h1><p>Sign in to manage your products and orders.</p>
 {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="admin-alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
-<form method="post"><label for="admin-username">Username</label><input id="admin-username" type="text" name="username" autocomplete="username" value="admin" required autofocus><label for="admin-password">Password</label><input id="admin-password" type="password" name="password" autocomplete="current-password" value="admin" required><button class="btn btn-primary btn-block" type="submit">Sign in <span>↗</span></button></form>
-<small>Local demo login: username <code>admin</code> / password <code>admin</code>. Change these before deployment.</small><a class="continue-link" href="/">← Back to storefront</a>
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label for="admin-username">Username</label><input id="admin-username" type="text" name="username" autocomplete="username" required autofocus><label for="admin-password">Password</label><input id="admin-password" type="password" name="password" autocomplete="current-password" required><button class="btn btn-primary btn-block" type="submit">Sign in <span>↗</span></button></form>
+<small>Store administrator access only.</small><a class="continue-link" href="/">← Back to storefront</a>
 </div></section>
 {% endblock %}

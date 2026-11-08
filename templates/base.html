@@ -19,6 +19,8 @@
     <nav class="main-nav" aria-label="Main navigation">
       <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
       <a href="/shop" class="{% if request.path == '/shop' %}active{% endif %}">Shop</a>
+      <a href="/shop?category=Sports%20Apparel">Sportswear</a>
+      <a href="/shop?sort=recent">New arrivals</a>
       <a href="/shop#categories">Categories</a>
       <a href="/#why-sportix">Our story</a>
     </nav>
@@ -27,9 +29,10 @@
       <button aria-label="Submit search">↵</button>
     </form>
     <div class="header-actions">
-      <a class="icon-link" href="/shop" aria-label="Shop products">♙</a>
-      <button class="cart-trigger" data-open-cart aria-label="Open shopping cart">♧ <span class="cart-count" data-cart-count>0</span></button>
-      <button class="mobile-menu" data-mobile-menu aria-label="Toggle menu">☰</button>
+      <a class="icon-link wishlist-link" href="/wishlist" aria-label="Wishlist">♡ <span class="cart-count" data-wishlist-count>0</span></a>
+      <button class="theme-toggle" data-theme-toggle aria-label="Switch to dark theme" aria-pressed="false">◐</button>
+      <button class="cart-trigger" data-open-cart aria-label="Open shopping cart">Bag <span class="cart-count" data-cart-count>0</span></button>
+      <button class="mobile-menu" data-mobile-menu aria-label="Toggle menu" aria-expanded="false">☰</button>
     </div>
   </header>
   <main>{% block content %}{% endblock %}</main>
@@ -38,7 +41,7 @@
       <div><a class="brand footer-brand" href="/"><span class="brand-mark">S</span><span>SPORT<span class="brand-accent">IX</span></span></a><p>Find your edge. Find your gear.<br>Made for every kind of athlete.</p></div>
       <div><h4>Explore</h4><a href="/shop">All products</a><a href="/shop?category=Cricket%20Equipment">Cricket</a><a href="/shop?category=Fitness%20%26%20Gym%20Accessories">Fitness & gym</a></div>
       <div><h4>Help & support</h4><a href="/#why-sportix">About SPORTIX</a><a href="/admin/login">Store admin</a><a href="mailto:hello@sportix.example">Contact us</a><span>Mon–Sat · 9 AM–6 PM</span></div>
-      <div class="footer-news"><h4>Keep moving.</h4><p>Gear tips, fresh drops and training inspiration.</p><form data-newsletter><input type="email" placeholder="Your email address" aria-label="Email address" required><button type="submit">→</button></form><small data-newsletter-message></small></div>
+      <div class="footer-news"><h4>Keep moving.</h4><p>Gear tips, fresh drops and training inspiration.</p><form data-newsletter><input type="email" placeholder="Your email address" aria-label="Email address" required><button type="submit">→</button></form><small data-newsletter-message role="status" aria-live="polite"></small></div>
     </div>
     <div class="footer-bottom"><span>© 2026 SPORTIX. All rights reserved.</span><span>Built for movement. Designed for you.</span></div>
   </footer>

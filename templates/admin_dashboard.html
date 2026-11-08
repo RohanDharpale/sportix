@@ -1,14 +1,83 @@
-\
 {% extends "base.html" %}
 {% block title %}Admin Dashboard | SPORTIX{% endblock %}
 {% block content %}
-<section class="admin-shell"><div class="admin-heading"><div><span class="eyebrow">SPORTIX / STORE MANAGEMENT</span><h1>Control <em>centre.</em></h1><p>Manage your catalog and keep every order moving.</p></div><div class="admin-heading-actions"><a class="btn btn-primary" href="{{ url_for('admin_product_new') }}">＋ Add product</a><form method="post" action="{{ url_for('admin_logout') }}"><button class="btn btn-outline-dark" type="submit">Sign out</button></form></div></div>
-{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="admin-alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
-<div class="admin-stats"><div class="admin-stat"><span>PRODUCTS IN CATALOG</span><strong>{{ product_count }}</strong><small>Across {{ categories|length }} categories</small></div><div class="admin-stat"><span>TOTAL ORDERS</span><strong>{{ order_count }}</strong><small>All recorded orders</small></div><div class="admin-stat"><span>ORDER VALUE</span><strong>₹{{ "{:,}".format(total_revenue|int) }}</strong><small>Gross order totals, not net revenue</small></div></div>
-<section class="admin-panel" id="products"><div class="admin-panel-heading"><div><span class="eyebrow">YOUR INVENTORY</span><h2>Products</h2></div><a class="text-link" href="{{ url_for('admin_product_new') }}">Add a product ↗</a></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th>Actions</th></tr></thead><tbody>
-{% for product in products %}<tr><td><div class="admin-product"><img src="{{ product.image }}" alt=""><div><strong>{{ product.name }}</strong><small>{{ product.brand }}</small></div></div></td><td>{{ product.category }}</td><td>₹{{ "{:,}".format(product.price) }}</td><td><span class="stock-pill {% if product.stock < 5 %}low{% endif %}">{{ product.stock }}</span></td><td>★ {{ '%.1f'|format(product.rating) }}</td><td><div class="admin-row-actions"><a href="{{ url_for('admin_product_edit', product_id=product.id) }}">Edit</a><form method="post" action="{{ url_for('admin_product_delete', product_id=product.id) }}" onsubmit="return confirm('Delete this product?')"><button type="submit">Delete</button></form></div></td></tr>{% else %}<tr><td colspan="6">No products yet. Add your first product.</td></tr>{% endfor %}
-</tbody></table></div></section>
-<section class="admin-panel" id="orders"><div class="admin-panel-heading"><div><span class="eyebrow">CUSTOMER ACTIVITY</span><h2>Recent orders</h2></div><span class="admin-muted">Latest 100 orders</span></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
-{% for order in orders %}<tr><td><strong>{{ order.order_number }}</strong></td><td>{{ order.customer_name }}<small class="table-sub">{{ order.email }} · {{ order.phone }}</small></td><td>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }} UTC</td><td>₹{{ "{:,}".format(order.total) }}</td><td>{{ order.payment_method }}</td><td><form class="status-form" method="post" action="{{ url_for('admin_order_status', order_id=order.id) }}"><select name="status" aria-label="Order status">{% for status in ['Placed','Processing','Shipped','Delivered','Cancelled'] %}<option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select><button type="submit">Save</button></form></td></tr>{% else %}<tr><td colspan="6">No orders yet. New customer orders will appear here.</td></tr>{% endfor %}
-</tbody></table></div></section></section>
+<section class="admin-shell">
+  <div class="admin-heading">
+    <div><span class="eyebrow">SPORTIX / STORE MANAGEMENT</span><h1>Control <em>centre.</em></h1><p>Manage your catalog and keep every order moving.</p></div>
+    <div class="admin-heading-actions"><a class="btn btn-primary" href="{{ url_for('admin_product_new') }}">＋ Add product</a><form method="post" action="{{ url_for('admin_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-outline-dark" type="submit">Sign out</button></form></div>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="admin-alert {{ category }}">{{ message }}</div>{% endfor %}
+  {% endwith %}
+  <div class="admin-dashboard-grid">
+    <aside class="admin-sidebar" aria-label="Dashboard navigation">
+      <span class="eyebrow">WORKSPACE</span>
+      <a href="#overview" class="active">Overview <span>↗</span></a>
+      <a href="#products">Products <span>{{ product_count }}</span></a>
+      <a href="#orders">Orders <span>{{ order_count }}</span></a>
+      <a href="#inventory">Inventory <span>{{ low_stock|length }}</span></a>
+    </aside>
+    <div class="admin-content">
+      <div class="admin-stats" id="overview">
+        <div class="admin-stat"><span>PRODUCTS IN CATALOG</span><strong>{{ product_count }}</strong><small>Across {{ categories|length }} categories</small></div>
+        <div class="admin-stat"><span>TOTAL ORDERS</span><strong>{{ order_count }}</strong><small>All recorded orders</small></div>
+        <div class="admin-stat"><span>CUSTOMERS</span><strong>{{ customer_count }}</strong><small>Unique customer emails on orders</small></div>
+        <div class="admin-stat"><span>NET ORDER VALUE</span><strong>₹{{ "{:,}".format(total_revenue|int) }}</strong><small>Excludes cancelled orders</small></div>
+      </div>
+      <div class="analytics-grid">
+        <section class="admin-panel analytics-panel">
+          <div class="admin-panel-heading"><div><span class="eyebrow">LAST 7 DAYS · INR</span><h2>Revenue trend</h2></div><span class="analytics-note">Recorded, non-cancelled orders</span></div>
+          <div class="revenue-chart" role="img" aria-label="Revenue by day for the last seven days">
+            {% for day in revenue_trend %}
+              <div class="chart-column"><span class="chart-value">{% if day.revenue %}₹{{ "{:,}".format(day.revenue) }}{% else %}—{% endif %}</span><div class="chart-track"><span class="chart-bar" style="height:{{ ((day.revenue / max_daily_revenue * 100)|round|int) if max_daily_revenue else 0 }}%"></span></div><span class="chart-day">{{ day.label }}</span><small>{{ day.date }}</small></div>
+            {% endfor %}
+          </div>
+        </section>
+        <section class="admin-panel analytics-panel">
+          <div class="admin-panel-heading"><div><span class="eyebrow">ORDER HEALTH</span><h2>Order status</h2></div></div>
+          <div class="status-breakdown">
+            {% for status, count in status_counts.items() %}
+              <div class="status-breakdown-row"><span class="status-dot status-{{ status|lower }}"></span><span>{{ status }}</span><strong>{{ count }}</strong><div class="status-track"><i style="width:{{ (count / order_count * 100)|round|int if order_count else 0 }}%"></i></div></div>
+            {% endfor %}
+          </div>
+        </section>
+      </div>
+      <div class="analytics-grid secondary-analytics">
+        <section class="admin-panel analytics-panel">
+          <div class="admin-panel-heading"><div><span class="eyebrow">BY UNITS SOLD</span><h2>Best sellers</h2></div></div>
+          {% if best_sellers %}
+            <ol class="best-seller-list">{% for name, units in best_sellers %}<li><span class="seller-rank">{{ '%02d'|format(loop.index) }}</span><strong>{{ name }}</strong><span>{{ units }} sold</span></li>{% endfor %}</ol>
+          {% else %}<p class="analytics-empty">Sales data will appear after the first order.</p>{% endif %}
+        </section>
+        <section class="admin-panel analytics-panel" id="inventory">
+          <div class="admin-panel-heading"><div><span class="eyebrow">INVENTORY WATCH</span><h2>Low stock</h2></div><span class="admin-muted">{{ low_stock|length }} item{% if low_stock|length != 1 %}s{% endif %} under 6 units</span></div>
+          {% if low_stock %}
+            <ul class="low-stock-list">{% for product in low_stock %}<li><a href="{{ url_for('admin_product_edit', product_id=product.id) }}">{{ product.name }}</a><span class="stock-pill {% if product.stock < 5 %}low{% endif %}">{{ product.stock }} left</span></li>{% endfor %}</ul>
+          {% else %}<p class="analytics-empty">No low-stock products. Inventory is looking good.</p>{% endif %}
+        </section>
+      </div>
+      <section class="admin-panel category-admin-panel" id="categories-admin">
+        <div class="admin-panel-heading"><div><span class="eyebrow">CATALOG STRUCTURE</span><h2>Manage categories</h2></div><span class="admin-muted">{{ categories|length }} active</span></div>
+        <form class="category-create-form" method="post" action="{{ url_for('admin_category_create') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label class="sr-only" for="new-category">New category name</label><input id="new-category" name="name" maxlength="80" placeholder="Add a category…" required><button class="btn btn-primary" type="submit">Add category <span>＋</span></button></form>
+        <div class="category-admin-list">{% for category in category_records %}<div class="category-admin-item"><span>{{ category.name }}</span>{% if category.name not in ['Cricket Equipment','Football Equipment','Basketball Equipment','Fitness & Gym Accessories','Running Shoes','Sports Apparel','Outdoor Sports Equipment'] %}<form method="post" action="{{ url_for('admin_category_delete', category_id=category.id) }}" data-category-name="{{ category.name }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="button" class="category-remove" data-delete-category>Remove</button></form>{% else %}<small>Core</small>{% endif %}</div>{% endfor %}</div>
+      </section>
+      <section class="admin-panel" id="products">
+        <div class="admin-panel-heading"><div><span class="eyebrow">YOUR INVENTORY</span><h2>Products</h2></div><a class="text-link" href="{{ url_for('admin_product_new') }}">Add a product ↗</a></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th>Actions</th></tr></thead><tbody>
+          {% for product in products %}
+            <tr><td><div class="admin-product"><img src="{{ product.image }}" alt=""><div><strong>{{ product.name }}</strong><small>{{ product.brand }}</small></div></div></td><td>{{ product.category }}</td><td>₹{{ "{:,}".format(product.price) }}</td><td><span class="stock-pill {% if product.stock < 5 %}low{% endif %}">{{ product.stock }}</span></td><td>★ {{ '%.1f'|format(product.rating) }}</td><td><div class="admin-row-actions"><a href="{{ url_for('admin_product_edit', product_id=product.id) }}">Edit</a><form method="post" action="{{ url_for('admin_product_delete', product_id=product.id) }}" onsubmit="return confirm('Delete this product?')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Delete</button></form></div></td></tr>
+          {% else %}<tr><td colspan="6">No products yet. Add your first product.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+      <section class="admin-panel" id="orders">
+        <div class="admin-panel-heading"><div><span class="eyebrow">CUSTOMER ACTIVITY</span><h2>Recent orders</h2></div><span class="admin-muted">Latest 100 orders</span></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Placed</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead><tbody>
+          {% for order in orders %}
+            <tr><td><strong>{{ order.order_number }}</strong></td><td>{{ order.customer_name }}<small class="table-sub">{{ order.email }} · {{ order.phone }}</small></td><td>{{ order.created_at.strftime('%d %b %Y, %I:%M %p') }} UTC</td><td>₹{{ "{:,}".format(order.total) }}</td><td>{{ order.payment_method }}</td><td><form class="status-form" method="post" action="{{ url_for('admin_order_status', order_id=order.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><select name="status" aria-label="Order status">{% for status in ['Placed','Processing','Shipped','Delivered','Cancelled'] %}<option value="{{ status }}" {% if order.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select><button type="submit">Save</button></form></td></tr>
+          {% else %}<tr><td colspan="6">No orders yet. New customer orders will appear here.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+    </div>
+  </div>
+</section>
 {% endblock %}
